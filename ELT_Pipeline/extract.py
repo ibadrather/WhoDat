@@ -11,7 +11,7 @@ The following steps are performed in the extract function:
 
 import os
 import cv2
-from typing import List
+from tqdm import tqdm
 from face_extractor import FaceExtractor
 
 
@@ -44,7 +44,9 @@ def extract_faces_from_directory(
             os.makedirs(output_folder, exist_ok=True)
 
             # Iterate over the files in the folder
-            for file_name in os.listdir(folder_path):
+            # tqdm is used to display a progress bar
+
+            for file_name in tqdm(os.listdir(folder_path), leave=False):
                 file_path = os.path.join(folder_path, file_name)
 
                 # Check if the path is a file

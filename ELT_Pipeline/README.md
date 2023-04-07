@@ -53,3 +53,43 @@ load(output_directory, csv_file_path)
 ## Transform
 
 The transformation process is performed during the data augmentation stage. This stage involves applying various data augmentation techniques to the extracted faces to increase the diversity and size of the dataset. Data augmentation can include operations such as rotation, scaling, flipping, and changing brightness/contrast.
+
+
+## Dataset Folder Structure
+Here, each person has their own folder with their name, and all of their videos and images are stored in that folder. The videos are in MP4 or AVI format, and the images are in JPEG or PNG format. This is just an example structure and can be modified as per the requirements of the project.
+
+```python
+WhoDat_Dataset/
+    ├── person1/
+    │   ├── video1.mp4
+    │   ├── video2.mp4
+    │   ├── image1.jpg
+    │   ├── image2.jpg
+    │   └── ...
+    ├── person2/
+    │   ├── video1.mp4
+    │   ├── video2.mp4
+    │   ├── image1.jpg
+    │   ├── image2.jpg
+    │   └── ...
+    ├── person3/
+    │   ├── video1.mp4
+    │   ├── video2.mp4
+    │   ├── image1.jpg
+    │   ├── image2.jpg
+    │   └── ...
+    ├── person4/
+    │   ├── video1.mp4
+    │   ├── video2.mp4
+    │   ├── image1.jpg
+    │   ├── image2.jpg
+    │   └── ...
+    ├── ...
+    └── personN/
+        ├── video1.mp4
+        ├── video2.mp4
+        ├── image1.jpg
+        ├── image2.jpg
+        └── ...
+
+```
