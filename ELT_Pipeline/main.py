@@ -1,5 +1,5 @@
 import os
-from utils import log
+from Common.logging import log
 from extract import extract
 from load import load
 

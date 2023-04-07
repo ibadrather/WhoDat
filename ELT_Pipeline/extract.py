@@ -12,7 +12,7 @@ The following steps are performed in the extract function:
 import os
 import cv2
 from tqdm import tqdm
-from face_extractor import FaceExtractor
+from Common.FaceExtractor import FaceExtractor
 
 
 def extract_faces_from_directory(

@@ -58,7 +58,7 @@ The transformation process is performed during the data augmentation stage. This
 ## Dataset Folder Structure
 Here, each person has their own folder with their name, and all of their videos and images are stored in that folder. The videos are in MP4 or AVI format, and the images are in JPEG or PNG format. This is just an example structure and can be modified as per the requirements of the project.
 
-```python
+```
 WhoDat_Dataset/
     ├── person1/
     │   ├── video1.mp4
