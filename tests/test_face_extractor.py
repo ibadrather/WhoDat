@@ -55,7 +55,7 @@ def test_extract_faces_from_video_with_frame_drop():
     face_extractor = FaceExtractor()
 
     # Load a video
-    video_path = "/media/ibad/7A28-1119/WhoDat_Dataset/saib/VID20221031154553.mp4"
+    video_path = "/home/ibad/Desktop/WhoDat_Dataset/ibad/VID20221016154143.mp4"
 
     # Extract faces from the video with a frame drop of 10 frames
     faces = face_extractor.extract_faces_from_video(video_path, frame_skip=50)

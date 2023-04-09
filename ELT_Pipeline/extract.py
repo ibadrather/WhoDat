@@ -12,11 +12,19 @@ The following steps are performed in the extract function:
 import os
 import cv2
 from tqdm import tqdm
+import sys
+
+# Get the absolute path of the parent directory of the script
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Add the parent directory to sys.path
+sys.path.append(parent_dir)
+
 from Common.FaceExtractor import FaceExtractor
 
 
 def extract_faces_from_directory(
-    directory_path: str, output_directory_path: str, method: str = "dlib"
+    directory_path: str, output_directory_path: str, method: str = "dlib", size: tuple = (128, 128)
 ) -> None:
     """
     Extract faces from images and videos in a directory using the selected face detection method.
@@ -57,7 +65,7 @@ def extract_faces_from_directory(
                     # Extract faces from images and videos
                     if file_ext in [".jpg", ".jpeg", ".png"]:
                         image = cv2.imread(file_path)
-                        faces = face_extractor.extract_faces_from_image(image)
+                        faces = face_extractor.extract_faces_from_image(image, size=size)
                     elif file_ext in [
                         ".mp4",
                         ".avi",
@@ -68,7 +76,7 @@ def extract_faces_from_directory(
                         ".webm",
                     ]:
                         faces = face_extractor.extract_faces_from_video(
-                            file_path, frame_skip=15, size=(128, 128)
+                            file_path, frame_skip=15, size=size
                         )
 
                     # Save the extracted faces to the output folder
@@ -79,5 +87,5 @@ def extract_faces_from_directory(
                         cv2.imwrite(output_path, face)
 
 
-def extract(input_dir: str, output_dir: str, method: str) -> None:
-    extract_faces_from_directory(input_dir, output_dir, method)
+def extract(input_dir: str, output_dir: str, method: str = "dlib", size: tuple = (128,128)) -> None:
+    extract_faces_from_directory(input_dir, output_dir, method, size=size)
