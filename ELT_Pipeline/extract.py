@@ -24,7 +24,10 @@ from Common.FaceExtractor import FaceExtractor
 
 
 def extract_faces_from_directory(
-    directory_path: str, output_directory_path: str, method: str = "dlib", size: tuple = (128, 128)
+    directory_path: str,
+    output_directory_path: str,
+    method: str = "dlib",
+    size: tuple = (128, 128),
 ) -> None:
     """
     Extract faces from images and videos in a directory using the selected face detection method.
@@ -65,7 +68,9 @@ def extract_faces_from_directory(
                     # Extract faces from images and videos
                     if file_ext in [".jpg", ".jpeg", ".png"]:
                         image = cv2.imread(file_path)
-                        faces = face_extractor.extract_faces_from_image(image, size=size)
+                        faces = face_extractor.extract_faces_from_image(
+                            image, size=size
+                        )
                     elif file_ext in [
                         ".mp4",
                         ".avi",
@@ -87,5 +92,7 @@ def extract_faces_from_directory(
                         cv2.imwrite(output_path, face)
 
 
-def extract(input_dir: str, output_dir: str, method: str = "dlib", size: tuple = (128,128)) -> None:
+def extract(
+    input_dir: str, output_dir: str, method: str = "dlib", size: tuple = (128, 128)
+) -> None:
     extract_faces_from_directory(input_dir, output_dir, method, size=size)

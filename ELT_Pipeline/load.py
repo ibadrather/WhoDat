@@ -4,7 +4,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
-def make_csv_from_dataset_directory(dataset_directory_path: str, csv_file_path: str) -> None:
+def make_csv_from_dataset_directory(
+    dataset_directory_path: str, csv_file_path: str
+) -> None:
     """
     Creates a CSV file containing the class/person name and the relative path to the extracted faces.
 
@@ -33,6 +35,7 @@ def make_csv_from_dataset_directory(dataset_directory_path: str, csv_file_path: 
                         )
                         csv_writer.writerow([folder_name, relative_path])
 
+
 def load(output_directory_path: str, csv_file_path: str) -> None:
     """
     Creates a CSV file containing the class/person name and the relative path to the extracted faces.
@@ -54,9 +57,13 @@ def load(output_directory_path: str, csv_file_path: str) -> None:
     df = pd.read_csv(csv_file_path)
 
     # Split the data into training, validation, and test sets
-    train_df, val_df = train_test_split(df, test_size=0.2, random_state=42, stratify=df["class"])
+    train_df, val_df = train_test_split(
+        df, test_size=0.2, random_state=42, stratify=df["class"]
+    )
 
-    test_df, val_df = train_test_split(val_df, test_size=0.5, random_state=42, stratify=val_df["class"])
+    test_df, val_df = train_test_split(
+        val_df, test_size=0.5, random_state=42, stratify=val_df["class"]
+    )
 
     # Save the dataframes to CSV files
     train_df.to_csv(os.path.join(output_directory_path, "train.csv"), index=False)
@@ -69,4 +76,3 @@ def load(output_directory_path: str, csv_file_path: str) -> None:
     print("Test set dimensions: ", test_df.shape)
 
     return
-
