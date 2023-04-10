@@ -23,7 +23,7 @@ SIZE = (256, 256)
 def main(
     input_dir: str, output_dir: str, log_file_name: str, method: str, size: tuple
 ) -> None:
-    # # 1 - Extract
+    # 1 - Extract
     # log("Extracting faces from images and videos...", log_file_name)
     # extract(input_dir, output_dir, method, size)
     # log("Finished extracting faces from images and videos.", log_file_name)

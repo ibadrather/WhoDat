@@ -17,7 +17,9 @@ from Common.Trainer import Trainer
 
 
 @pytest.fixture(scope="module")
-def trainer():
+def trainer() -> Trainer:
+    """Fixture to initialize and clean up the Trainer object."""
+
     # Initialize the model, loss function, and optimizer
     model = SimpleModel()
     criterion = nn.CrossEntropyLoss()
@@ -46,37 +48,44 @@ val_loader = DataLoader(dataset, batch_size=10)
 
 
 class SimpleModel(nn.Module):
+    """A simple model for testing purposes."""
+
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(10, 2)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.fc1(x)
 
 
-def test_training_step(trainer):
+def test_training_step(trainer: Trainer) -> None:
+    """Test the training_step method."""
     inputs, labels = X[:10], y[:10]
     trainer.training_step(inputs, labels)
     assert trainer.optimizer.state != {}, "Optimizer state not updated"
 
 
-def test_train_epoch(trainer):
+def test_train_epoch(trainer: Trainer) -> None:
+    """Test the train_epoch method."""
     train_loss = trainer.train_epoch(train_dataloader=train_loader)
     assert isinstance(train_loss, float), "train_epoch should return a float value"
 
 
-def test_validation_step(trainer):
+def test_validation_step(trainer: Trainer) -> None:
+    """Test the validation_step method."""
     inputs, labels = X[:10], y[:10]
     loss = trainer.validation_step(inputs, labels)
     assert isinstance(loss, float), "validation_step should return a float value"
 
 
-def test_val_epoch(trainer):
+def test_val_epoch(trainer: Trainer) -> None:
+    """Test the val_epoch method."""
     val_loss = trainer.val_epoch(val_dataloader=val_loader)
     assert isinstance(val_loss, float), "val_epoch should return a float value"
 
 
-def test_model_outputs(trainer):
+def test_model_outputs(trainer: Trainer) -> None:
+    """Test the model's output dimensions."""
     inputs, labels = X[:10], y[:10]
     outputs = trainer.model(inputs)
     assert outputs.shape == (
@@ -85,7 +94,8 @@ def test_model_outputs(trainer):
     ), "Model outputs should be of shape (batch_size, num_classes)"
 
 
-def test_train_epochs(trainer):
+def test_train_epochs(trainer: Trainer) -> None:
+    """Test the train_epochs method."""
     trainer.train_epochs(train_dataloader=train_loader, val_dataloader=val_loader)
     assert (
         len(trainer.train_losses) == 5
@@ -95,7 +105,8 @@ def test_train_epochs(trainer):
     ), "Number of recorded val losses should be equal to the number of epochs"
 
 
-def test_save_checkpoint(trainer):
+def test_save_checkpoint(trainer: Trainer) -> None:
+    """Test the save_checkpoint method."""
     trainer.save_checkpoint(epoch=1)
     assert os.path.exists(
         os.path.join(trainer.output_dir, "{}.pth".format(trainer.architecture))
@@ -105,7 +116,8 @@ def test_save_checkpoint(trainer):
     ), "Model checkpoint should be saved as a .pt file (TorchScript)"
 
 
-def test_plot_losses(trainer):
+def test_plot_losses(trainer: Trainer) -> None:
+    """Test the plot_losses method."""
     trainer.plot_losses()
     assert os.path.isfile(
         os.path.join(trainer.output_dir, "losses.png")
