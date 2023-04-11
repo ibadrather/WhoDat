@@ -58,6 +58,17 @@ class SimpleModel(nn.Module):
         return self.fc1(x)
 
 
+def test_train_epochs(trainer: Trainer) -> None:
+    """Test the train_epochs method."""
+    trainer.train_epochs(train_dataloader=train_loader, val_dataloader=val_loader)
+    assert (
+        len(trainer.train_losses) == 5
+    ), "Number of recorded train losses should be equal to the number of epochs"
+    assert (
+        len(trainer.val_losses) == 5
+    ), "Number of recorded val losses should be equal to the number of epochs"
+
+
 def test_training_step(trainer: Trainer) -> None:
     """Test the training_step method."""
     inputs, labels = X[:10], y[:10]
@@ -92,17 +103,6 @@ def test_model_outputs(trainer: Trainer) -> None:
         10,
         2,
     ), "Model outputs should be of shape (batch_size, num_classes)"
-
-
-def test_train_epochs(trainer: Trainer) -> None:
-    """Test the train_epochs method."""
-    trainer.train_epochs(train_dataloader=train_loader, val_dataloader=val_loader)
-    assert (
-        len(trainer.train_losses) == 5
-    ), "Number of recorded train losses should be equal to the number of epochs"
-    assert (
-        len(trainer.val_losses) == 5
-    ), "Number of recorded val losses should be equal to the number of epochs"
 
 
 def test_save_checkpoint(trainer: Trainer) -> None:

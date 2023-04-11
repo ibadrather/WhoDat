@@ -1,0 +1,14 @@
+name: WhoDat_Experiment
+
+python_version: 3.9.7
+
+entry_points:
+  main:
+    parameters:
+      epochs: {type: int, default: 1000}
+      bs: {type: int, default: 20}
+      lr: {type: float, default: 0.001}
+    command: "python training.py --epochs {epochs} --bs {bs} --lr {lr}"
+
+
+# mlflow run . -P epochs=100 --env-manager=local --experiment-name=WhoDat_Experiment

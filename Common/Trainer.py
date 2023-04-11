@@ -476,4 +476,6 @@ class Trainer:
         # create output directory if it doesn't exist
         os.makedirs(self.output_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(self.output_dir, "losses.png"), dpi=400)
+        plt.savefig(os.path.join(self.output_dir, "losses.png"), dpi=300)
+
+        plt.close("all")
