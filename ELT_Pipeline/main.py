@@ -24,9 +24,9 @@ def main(
     input_dir: str, output_dir: str, log_file_name: str, method: str, size: tuple
 ) -> None:
     # 1 - Extract
-    # log("Extracting faces from images and videos...", log_file_name)
-    # extract(input_dir, output_dir, method, size)
-    # log("Finished extracting faces from images and videos.", log_file_name)
+    log("Extracting faces from images and videos...", log_file_name)
+    extract(input_dir, output_dir, method, size)
+    log("Finished extracting faces from images and videos.", log_file_name)
 
     # 2 - Load
     log("Creating CSV file...", log_file_name)

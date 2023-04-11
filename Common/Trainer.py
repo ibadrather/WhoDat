@@ -221,6 +221,9 @@ class Trainer:
             epoch_loss += loss
 
         epoch_loss /= len(train_dataloader)
+
+        self.train_losses.append(epoch_loss)
+
         return epoch_loss
 
     def validation_step(self, inputs, labels):
@@ -306,6 +309,9 @@ class Trainer:
             epoch_loss += loss
 
         epoch_loss /= len(val_dataloader)
+
+        self.val_losses.append(epoch_loss)
+
         return epoch_loss
 
     def save_checkpoint(self, epoch: int, save_dir: Optional[str] = None):
@@ -408,11 +414,9 @@ class Trainer:
         ) as epoch_progress:
             for epoch in epoch_progress:
                 train_loss = self.train_epoch(train_dataloader)
-                self.train_losses.append(train_loss)
 
                 if self.val_dataloader or val_dataloader:
                     val_loss = self.val_epoch(val_dataloader)
-                    self.val_losses.append(val_loss)
                     epoch_progress.set_postfix(
                         {
                             "Train Loss": f"{train_loss:.4f}",
@@ -468,4 +472,8 @@ class Trainer:
         plt.ylabel("Loss")
         plt.title("Losses vs. Epochs")
         plt.legend()
+
+        # create output directory if it doesn't exist
+        os.makedirs(self.output_dir, exist_ok=True)
+
         plt.savefig(os.path.join(self.output_dir, "losses.png"), dpi=400)

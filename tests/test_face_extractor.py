@@ -3,20 +3,17 @@ import sys
 import numpy as np
 import pytest
 import cv2
+from typing import Any
+from pathlib import Path
+
+import sys
+
 # Get the absolute path of the parent directory of the script
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
 # Add the parent directory to sys.path
 sys.path.append(parent_dir)
 
-
-# Import the FaceExtractor class
 from Common.FaceExtractor import FaceExtractor
-
-from pathlib import Path
-from typing import Any
-
-import pytest
 
 
 @pytest.fixture
@@ -26,10 +23,13 @@ def test_image() -> Any:
     test_image = cv2.imread(test_image_path, cv2.IMREAD_COLOR)
     return test_image
 
+
 @pytest.fixture
 def test_image_without_faces() -> Any:
     # Load a test image
-    test_image_without_faces = np.random.randint(0, 255, size=(100, 100, 3), dtype=np.uint8)
+    test_image_without_faces = np.random.randint(
+        0, 255, size=(100, 100, 3), dtype=np.uint8
+    )
     return test_image_without_faces
 
 
@@ -38,7 +38,10 @@ def face_extractor() -> FaceExtractor:
     # Create a FaceExtractor object
     return FaceExtractor()
 
-def test_extract_faces_from_image(face_extractor: FaceExtractor, test_image: Any) -> None:
+
+def test_extract_faces_from_image(
+    face_extractor: FaceExtractor, test_image: Any
+) -> None:
     """Test the extract_faces_from_image method."""
 
     # Extract faces from the image
@@ -48,7 +51,9 @@ def test_extract_faces_from_image(face_extractor: FaceExtractor, test_image: Any
     assert len(faces) > 0
 
 
-def test_extract_faces_from_image_without_faces(face_extractor: FaceExtractor, test_image_without_faces: Any) -> None:
+def test_extract_faces_from_image_without_faces(
+    face_extractor: FaceExtractor, test_image_without_faces: Any
+) -> None:
     """Test the extract_faces_from_image method with an image without faces."""
 
     # Extract faces from the image
@@ -58,7 +63,9 @@ def test_extract_faces_from_image_without_faces(face_extractor: FaceExtractor, t
     assert len(faces) == 0
 
 
-def test_extract_faces_from_video_with_frame_drop(face_extractor: FaceExtractor) -> None:
+def test_extract_faces_from_video_with_frame_drop(
+    face_extractor: FaceExtractor,
+) -> None:
     """Test the extract_faces_from_video method with frame skipping."""
 
     # Load a video
@@ -71,7 +78,9 @@ def test_extract_faces_from_video_with_frame_drop(face_extractor: FaceExtractor)
     assert len(faces) > 0
 
 
-def test_extract_faces_from_video_with_invalid_path(face_extractor: FaceExtractor) -> None:
+def test_extract_faces_from_video_with_invalid_path(
+    face_extractor: FaceExtractor,
+) -> None:
     """Test the extract_faces_from_video method with an invalid video path."""
 
     # Load a video with an invalid path
@@ -93,4 +102,3 @@ def test_extract_faces_from_video_with_no_faces(face_extractor: FaceExtractor) -
 
     # Assert that the length of the faces list is 0
     assert len(faces) == 0
-
