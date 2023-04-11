@@ -4,7 +4,9 @@ from tqdm import tqdm
 import pandas as pd
 import time
 from argparser import parse_arguments
-from utils import log_arguments_to_mlflow
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
+from utils import log_arguments_to_mlflow, balance_dataframe_by_resampling_class
 
 # Add the parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -16,7 +18,7 @@ from Common.Trainer import Trainer
 import torch
 from torch.utils.data import DataLoader
 
-from models import FaceRecognitionModel, SimpleCNN
+from models import FaceRecognitionModel, SimpleCNN, ResNet50
 from dataloading import WhoDatDataset
 
 from tensorboardX import SummaryWriter
@@ -71,6 +73,8 @@ def main(arg_namespace=None):
         model = FaceRecognitionModel(num_classes=num_classes)
     elif args.arch == "SimpleCNN":
         model = SimpleCNN(num_classes=num_classes)
+    elif args.arch == "ResNet50":
+        model = ResNet50(num_classes=num_classes)
     else:
         raise ValueError("Invalid model architecture.")
 
@@ -115,8 +119,12 @@ def main(arg_namespace=None):
 
         for epoch in tqdm(range(EPOCHS), desc="Epochs"):
             # Balance the data by stratified sampling randomly
-            balanced_data = train_data.groupby("class").sample(
-                n=args.sample_size, replace=True, random_state=int(time.time())
+            balanced_data = balance_dataframe_by_resampling_class(
+                dataframe=train_data, 
+                class_column="class",
+                sample_size=args.sample_size,
+                seed=int(time.time()),
+                replace=True,
             )
 
             # Create the balanced dataset
@@ -135,9 +143,42 @@ def main(arg_namespace=None):
             trainer.train_epoch(train_dataloader)
             trainer.val_epoch(val_dataloader)
 
+            # make predictions on the train and validation sets to calculate various metrics
+            train_outputs_model = trainer.train_outputs
+            train_targets_model = trainer.train_targets
+
+            val_outputs_model = trainer.val_outputs
+            val_targets_model = trainer.val_targets
+
+            # Calculate the accuracy, f1 and recall on the train and validation sets
+            train_accuracy = accuracy_score(train_targets_model, train_outputs_model)
+            val_accuracy = accuracy_score(val_targets_model, val_outputs_model)
+
+            train_f1 = f1_score(
+                train_targets_model, train_outputs_model, average="macro"
+            )
+            val_f1 = f1_score(val_targets_model, val_outputs_model, average="macro")
+
+            train_recall = recall_score(
+                train_targets_model, train_outputs_model, average="macro"
+            )
+            val_recall = recall_score(
+                val_targets_model, val_outputs_model, average="macro"
+            )
+
             # Log the training and validation losses to MLflow
             mlflow.log_metric("train_loss", trainer.train_losses[-1], step=epoch)
             mlflow.log_metric("val_loss", trainer.val_losses[-1], step=epoch)
+
+            # Log the training and validation metrics to MLflow
+            mlflow.log_metric("train_accuracy", train_accuracy, step=epoch)
+            mlflow.log_metric("val_accuracy", val_accuracy, step=epoch)
+
+            mlflow.log_metric("train_f1", train_f1, step=epoch)
+            mlflow.log_metric("val_f1", val_f1, step=epoch)
+
+            mlflow.log_metric("train_recall", train_recall, step=epoch)
+            mlflow.log_metric("val_recall", val_recall, step=epoch)
 
             trainer.plot_losses()
             # plot artifact
@@ -147,3 +188,9 @@ def main(arg_namespace=None):
 
         # Log the final PyTorch model to MLflow
         mlflow.pytorch.log_model(model, "model")
+
+    return trainer.best_val_loss
+
+
+if __name__ == "__main__":
+    main()

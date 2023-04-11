@@ -126,6 +126,12 @@ class Trainer:
         self.best_train_loss = np.inf
         self.current_patience = 0
 
+        # model outputs for training and validation
+        self.train_outputs = []
+        self.train_gt = []
+        self.val_outputs = []
+        self.val_gt = []
+
     def training_step(self, inputs, labels):
         """
         Perform a single training step, including forward pass, loss calculation,
@@ -167,6 +173,12 @@ class Trainer:
         # 6. Zero grad
         self.optimizer.zero_grad()
 
+        # save model outputs
+        train_outputs = logits.detach().cpu().numpy()
+        train_outputs = np.argmax(train_outputs, axis=1)
+        self.train_outputs.extend(train_outputs.flatten())
+        self.train_targets.extend(labels.detach().cpu().numpy().flatten())
+
         return loss.item()
 
     def train_epoch(
@@ -205,6 +217,10 @@ class Trainer:
         ...
         self.model.train()
         epoch_loss = 0
+
+        # reset model outputs
+        self.train_outputs = []
+        self.train_targets = []
 
         if self.train_dataloader is not None:
             train_dataloader = self.train_dataloader
@@ -258,6 +274,13 @@ class Trainer:
             # 2. Loss
             loss = self.criterion(logits, labels)
 
+            # 3. Save outputs by detaching and converting to numpy and shifting to cpu
+            val_outputs = logits.detach().cpu().numpy()
+            val_outputs = np.argmax(val_outputs, axis=1)
+
+            self.val_outputs.extend(val_outputs.flatten())
+            self.val_targets.extend(labels.detach().cpu().numpy().flatten())
+
         return loss.item()
 
     def val_epoch(self, val_dataloader: Optional[torch.utils.data.DataLoader] = None):
@@ -294,6 +317,10 @@ class Trainer:
 
         self.model.eval()
         epoch_loss = 0
+
+        # reset val outputs
+        self.val_outputs = []
+        self.val_targets = []
 
         if self.val_dataloader is not None:
             val_dataloader = self.val_dataloader

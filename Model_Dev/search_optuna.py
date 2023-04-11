@@ -1,44 +1,40 @@
-import argparse
-
 import mlflow
 import optuna
 import training
+from argparser import parse_arguments
 
 
 def objective(trial):
     # Suggest hyperparameters
-    epochs = trial.suggest_int("epochs", 500, 300, 1000)
-    bs = trial.suggest_int("bs", 30, 50)
-    lr = trial.suggest_loguniform("lr", 1e-4, 1e-5, 1e-6)
-    patience = trial.suggest_int("patience", 15)
-    arch = trial.suggest_categorical(
-        "arch", ["SimpleCNN", "FaceRecognitionModel", "ResNet18"]
-    )
+    epochs = trial.suggest_int("epochs", 100, 200)
+    bs = trial.suggest_int("bs", 20, 50)
+    lr = trial.suggest_loguniform("lr", 1e-6, 2e-5)
+    # patience = trial.suggest_int("patience", 10,)
+    arch = trial.suggest_categorical("arch", ["SimpleCNN", "ResNet50"])
+    sample_size = trial.suggest_int("sample_size", 100, 300)
 
-    # Create an argparse.Namespace object with the suggested hyperparameters
-    arg_namespace = argparse.Namespace(
-        epochs=epochs,
-        bs=bs,
-        lr=lr,
-        patience=patience,
-        arch=arch,
-        output_dir="training_output",
-        seed=42,
-        device="cuda:0",
-        optimizer="Adam",
-        scheduler="ReduceLROnPlateau",
-        loss_fn="CrossEntropyLoss",
-        image_size=(224, 224),
-    )
+    # Get the default arguments
+    default_args = parse_arguments()
+
+    # Update the default arguments with the suggested hyperparameters
+    default_args.epochs = epochs
+    default_args.bs = bs
+    default_args.lr = lr
+    # default_args.patience = patience
+    default_args.arch = arch
+    default_args.sample_size = sample_size
 
     # Run the training
-    train_result = training.main(arg_namespace)
+    train_result = training.main(default_args)
 
     # Log the run with MLflow
     with mlflow.start_run():
         # Log arguments to MLflow
-        for arg, value in vars(arg_namespace).items():
+        for arg, value in vars(default_args).items():
             mlflow.log_param(arg, value)
+
+        # Log the result to MLflow
+        mlflow.log_metric("best_val_loss", train_result)
 
     return train_result
 
@@ -48,7 +44,7 @@ def main():
     mlflow.set_experiment("facial_recognition_training_optuna")
 
     # Create the Optuna study
-    study = optuna.create_study(direction="maximize")
+    study = optuna.create_study(direction="minimize")
 
     # Optimize the study with the objective function
     study.optimize(objective, n_trials=10)
