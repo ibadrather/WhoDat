@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 
 class FaceRecognitionModel(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, dropout=0.2):
         super(FaceRecognitionModel, self).__init__()
         # Load pre-trained ResNet50
         resnet50 = models.resnet50(pretrained=True)
@@ -19,6 +19,8 @@ class FaceRecognitionModel(nn.Module):
         # Create a new classification head for facial recognition
         self.classifier = nn.Linear(resnet50.fc.in_features, num_classes)
 
+        self.dropout = nn.Dropout(p=dropout)
+
     def forward(self, x):
         x = self.resnet50(x)
         x = x.view(x.size(0), -1)
@@ -27,8 +29,10 @@ class FaceRecognitionModel(nn.Module):
 
 
 class SimpleCNN(nn.Module):
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=10, dropout=0.2):
         super(SimpleCNN, self).__init__()
+
+        self.dropout = nn.Dropout(p=dropout)
 
         self.conv1 = nn.Conv2d(
             in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1
@@ -218,3 +222,76 @@ def ResNet101(num_classes, channels=3):
 
 def ResNet152(num_classes, channels=3):
     return ResNet(Bottleneck, [3, 8, 36, 3], num_classes, channels)
+
+
+class CNN(nn.Module):
+    def __init__(self, num_classes: int = 10, dropout: float = 0.2):
+        """
+        Initializes a CNN model with the given number of classes and dropout rate.
+
+        Args:
+            num_classes (int, optional): The number of output classes. Defaults to 10.
+            dropout (float, optional): The dropout rate for the dropout layers. Defaults to 0.2.
+        """
+        super(CNN, self).__init__()
+
+        self.dropout = dropout
+
+        # Convolutional layers with batch norm, activation, and dropout
+        self.conv_layers = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+        )
+
+        # Fully connected layers with batch norm, activation, and dropout
+        self.fc_layers = nn.Sequential(
+            nn.Linear(128 * 4 * 4, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Linear(512, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+        )
+
+        # Output layer
+        self.output_layer = nn.Linear(256, num_classes)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the CNN model.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: The output tensor.
+        """
+        x = self.conv_layers(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc_layers(x)
+        x = self.output_layer(x)
+        return x

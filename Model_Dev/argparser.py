@@ -12,6 +12,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=10, help="Number of epochs.")
     parser.add_argument("--bs", type=int, default=40, help="Batch size.")
     parser.add_argument("--lr", type=float, default=1e-5, help="Learning rate.")
+    parser.add_argument("--dropout", type=float, default=0.2, help="Dropout rate.")
     parser.add_argument(
         "--patience", type=int, default=3, help="Patience for early stopping."
     )

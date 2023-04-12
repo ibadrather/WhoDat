@@ -18,7 +18,7 @@ from Common.Trainer import Trainer
 import torch
 from torch.utils.data import DataLoader
 
-from models import FaceRecognitionModel, SimpleCNN, ResNet50
+from models import FaceRecognitionModel, SimpleCNN, ResNet50, CNN
 from dataloading import WhoDatDataset
 
 from tensorboardX import SummaryWriter
@@ -75,6 +75,8 @@ def main(arg_namespace=None):
         model = SimpleCNN(num_classes=num_classes)
     elif args.arch == "ResNet50":
         model = ResNet50(num_classes=num_classes)
+    elif args.arch == "CNN":
+        model = CNN(num_classes=num_classes, dropout=args.dropout)
     else:
         raise ValueError("Invalid model architecture.")
 
@@ -120,7 +122,7 @@ def main(arg_namespace=None):
         for epoch in tqdm(range(EPOCHS), desc="Epochs"):
             # Balance the data by stratified sampling randomly
             balanced_data = balance_dataframe_by_resampling_class(
-                dataframe=train_data, 
+                dataframe=train_data,
                 class_column="class",
                 sample_size=args.sample_size,
                 seed=int(time.time()),
