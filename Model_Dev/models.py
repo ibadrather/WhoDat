@@ -235,46 +235,63 @@ class CNN(nn.Module):
         """
         super(CNN, self).__init__()
 
-        self.dropout = dropout
+        self.dropout = nn.Dropout(p=dropout)
+        self.activation = nn.ReLU()
+        self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
         # Convolutional layers with batch norm, activation, and dropout
         self.conv_layers = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            # Conv Group
+            nn.Conv2d(3, 32, kernel_size=5, stride=1, padding=1),
             nn.BatchNorm2d(32),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
+            self.activation,
+            self.dropout,
+
+            # Conv Group
             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
+            self.activation,
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            self.dropout,
+
+            # Conv Group
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
+            self.activation,
+            self.max_pool,
+            self.dropout,
+
+            # Conv Group
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
-            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
-            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
+            self.activation,
+            self.dropout,
+
+            # Conv Group
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            self.activation,
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            self.dropout,
+
+            # Conv Group
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            self.activation,
+            self.dropout,
         )
+
 
         # Fully connected layers with batch norm, activation, and dropout
         self.fc_layers = nn.Sequential(
-            nn.Linear(128 * 4 * 4, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
+            nn.Linear(36864, 512),
+            # nn.BatchNorm1d(),
+            self.activation,
+            self.dropout,
             nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
+            # nn.BatchNorm1d(),
+            self.activation,
+            self.dropout,
         )
 
         # Output layer
@@ -291,7 +308,24 @@ class CNN(nn.Module):
             torch.Tensor: The output tensor.
         """
         x = self.conv_layers(x)
-        x = x.view(x.size(0), -1)
+        x = x.view(x.size(0),-1)
         x = self.fc_layers(x)
         x = self.output_layer(x)
         return x
+
+
+import numpy as np
+import torch
+
+def model_size(model: torch.nn.Module, as_string: bool = True):
+    num_params = sum(p.numel() for p in model.parameters())
+    memory_size = num_params * 4  # Assuming 4 bytes per parameter (float32)
+
+    if as_string:
+        return f'{num_params:,} parameters, {memory_size / (1024 ** 2):.2f} MiB'
+    else:
+        return num_params, memory_size
+
+# Example usage
+model = CNN()
+print(model_size(model))

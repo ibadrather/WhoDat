@@ -9,9 +9,9 @@ def parse_arguments() -> argparse.Namespace:
         argparse.Namespace: An object containing parsed command-line arguments
     """
     parser = argparse.ArgumentParser(description="Train a facial recognition model.")
-    parser.add_argument("--epochs", type=int, default=10, help="Number of epochs.")
+    parser.add_argument("--epochs", type=int, default=133, help="Number of epochs.")
     parser.add_argument("--bs", type=int, default=40, help="Batch size.")
-    parser.add_argument("--lr", type=float, default=1e-5, help="Learning rate.")
+    parser.add_argument("--lr", type=float, default=7e-6, help="Learning rate.")
     parser.add_argument("--dropout", type=float, default=0.2, help="Dropout rate.")
     parser.add_argument(
         "--patience", type=int, default=3, help="Patience for early stopping."
@@ -42,7 +42,7 @@ def parse_arguments() -> argparse.Namespace:
         help="Loss function to use for training.",
     )
     parser.add_argument(
-        "--image_size", nargs=2, type=int, default=(224, 224), help="Image size."
+        "--image_size", nargs=2, type=int, default=(200, 200), help="Image size."
     )
     parser.add_argument(
         "--sample_size",

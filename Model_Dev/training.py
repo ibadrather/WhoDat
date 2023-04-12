@@ -114,6 +114,9 @@ def main(arg_namespace=None):
 
     EPOCHS = args.epochs
 
+    # close any older mlflow runs
+    mlflow.end_run()
+
     mlflow.set_experiment("WhoDat_Experiment")
     with mlflow.start_run():
         # Log the arguments to MLFlow
