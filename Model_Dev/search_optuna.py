@@ -21,12 +21,12 @@ def objective(trial: Trial) -> float:
     default_args = parse_arguments()
 
     # Suggest and Update the default hyperparameters with the suggested hyperparameters
-    default_args.epochs = trial.suggest_int("epochs", 80, 140, step=20)
-    default_args.bs = trial.suggest_int("bs", 20, 50)
-    default_args.lr = trial.suggest_float("lr", 7e-6, 1e-5, step=3e-6)
-    default_args.sample_size = trial.suggest_int("sample_size", 50, 200, step=50)
-    default_args.arch = trial.suggest_categorical("arch", ["ResNet50", "CNN"])
-    default_args.dropout = trial.suggest_float("dropout", 0.1, 0.8, step=0.2)
+    # default_args.epochs = trial.suggest_int("epochs", 80, 140, step=20)
+    # default_args.bs = trial.suggest_int("bs", 20, 50)
+    # default_args.lr = trial.suggest_float("lr", 7e-6, 1e-5, step=3e-6)
+    # default_args.sample_size = trial.suggest_int("sample_size", 50, 200, step=50)
+    default_args.arch = trial.suggest_categorical("arch", ["ViT", "ViT_pt"])
+    # default_args.dropout = trial.suggest_float("dropout", 0.1, 0.8, step=0.2)
 
     # Run the training
     train_result = training.main(default_args)
@@ -54,7 +54,7 @@ def save_study(study: Study, trial: Trial, study_name: str) -> None:
 
 def main():
 
-    N_TRIALS = 5
+    N_TRIALS = 2
 
     study_name = "WhoDat_Model_Dev_optuna_study"
 
