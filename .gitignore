@@ -4,6 +4,8 @@ WhoDat_Faces_128x128
 WhoDat_Faces
 training_output
 mlruns
+optuna_study_files
+*.pkl
 
 ##################################################
 # Byte-compiled / optimized / DLL files

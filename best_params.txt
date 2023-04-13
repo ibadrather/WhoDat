@@ -1,0 +1,7 @@
+Best Trial: 
+
+    	 Value:  inf 
+
+    	 Params: {'arch': 'ResNet50', 'bs': 23, 'dropout': 0.30000000000000004, 'epochs': 120, 'lr': 9.999999999999999e-06, 'sample_size': 100} 
+
+    
