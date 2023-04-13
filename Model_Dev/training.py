@@ -18,7 +18,7 @@ from Common.Trainer import Trainer
 import torch
 from torch.utils.data import DataLoader
 
-from models import FaceRecognitionModel, SimpleCNN, ResNet50, CNN
+from Common.VisionModels import ModelZoo
 from dataloading import WhoDatDataset
 
 from tensorboardX import SummaryWriter
@@ -67,18 +67,10 @@ def main(arg_namespace=None):
     train_data = pd.read_csv(train_data_path)
     val_data = pd.read_csv(val_data_path)
 
-    # Initialize the model with the number of classes
-    num_classes = 9
-    if args.arch == "FaceRecognitionModel":
-        model = FaceRecognitionModel(num_classes=num_classes)
-    elif args.arch == "SimpleCNN":
-        model = SimpleCNN(num_classes=num_classes)
-    elif args.arch == "ResNet50":
-        model = ResNet50(num_classes=num_classes)
-    elif args.arch == "CNN":
-        model = CNN(num_classes=num_classes, dropout=args.dropout)
-    else:
-        raise ValueError("Invalid model architecture.")
+    # Initialize the model
+    model = ModelZoo.get_model(
+        args.arch, input_channels=3, num_classes=args.num_classes
+    )
 
     # Set up the optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -136,7 +128,7 @@ def main(arg_namespace=None):
             train_dataset = WhoDatDataset(
                 balanced_data, data_augmentation=data_augmentation
             )
-            val_dataset = WhoDatDataset(val_data, data_augmentation=data_augmentation)
+            val_dataset = WhoDatDataset(val_data, data_augmentation=None)
 
             # Create the DataLoaders
             train_dataloader = DataLoader(
