@@ -1,12 +1,13 @@
 import torch
 from torch import nn
-from typing import Optional
+from typing import Optional, Tuple
 from collections import defaultdict
 import numpy as np
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 import os
 import os.path as osp
+import copy
 
 
 class Trainer:
@@ -97,6 +98,7 @@ class Trainer:
         self.architecture = architecture
         self.train_dataloader = train_dataloader
         self.val_dataloader = val_dataloader
+        self.image_size = (224, 224)
 
         self.num_epochs = num_epochs
         self.criterion = criterion
@@ -122,8 +124,6 @@ class Trainer:
         # Variables that will change during training
         self.train_losses = []
         self.val_losses = []
-        self.best_val_loss = np.inf
-        self.best_train_loss = np.inf
         self.current_patience = 0
 
         # model outputs for training and validation
@@ -131,6 +131,13 @@ class Trainer:
         self.train_gt = []
         self.val_outputs = []
         self.val_gt = []
+
+        # 
+        self.best_val_loss = np.inf
+        self.best_train_loss = np.inf
+        
+        self.best_model = None
+        
 
     def training_step(self, inputs, labels):
         """
@@ -240,6 +247,10 @@ class Trainer:
 
         self.train_losses.append(epoch_loss)
 
+        # update best train loss
+        if epoch_loss < self.best_train_loss:
+            self.best_train_loss = epoch_loss
+
         return epoch_loss
 
     def validation_step(self, inputs, labels):
@@ -339,6 +350,11 @@ class Trainer:
 
         self.val_losses.append(epoch_loss)
 
+        # update best model
+        if epoch_loss < self.best_val_loss:
+            self.best_val_loss = epoch_loss
+            self.best_model = copy.deepcopy(self.model)
+
         return epoch_loss
 
     def save_checkpoint(self, epoch: int, save_dir: Optional[str] = None):
@@ -359,7 +375,6 @@ class Trainer:
         This method performs the following operations:
         1. Create a dictionary of model parameters and training state information.
         2. Save the model parameters and training state as a PyTorch checkpoint (.pth) file.
-        3. Save the model as a TorchScript (.pt) file for deployment purposes.
         """
 
         if save_dir is None:
@@ -371,19 +386,11 @@ class Trainer:
         model_name = f"{self.architecture}.pth"
         model_save_path = osp.join(save_dir, model_name)
 
-        model_state_dict = self.model.state_dict()
-        optimizer_state_dict = (
-            self.optimizer.state_dict() if self.optimizer is not None else None
-        )
-        scheduler_state_dict = (
-            self.scheduler.state_dict() if self.scheduler is not None else None
-        )
-
+        model_state_dict = self.best_model.state_dict()
+        
         model_params = {
             "model_state_dict": model_state_dict,
             "epochs_trained": epoch,
-            "optimizer_state_dict": optimizer_state_dict,
-            "scheduler_state_dict": scheduler_state_dict,
             "architecture": self.architecture,
         }
         save_model = model_params.copy()
@@ -399,6 +406,81 @@ class Trainer:
         torch.jit.save(torch.jit.script(self.model), model_save_path)
 
         return None
+    
+    def save_torchscript_model(self, epoch: int, save_dir: Optional[str] = None):
+
+        """
+        Save the torchscript model checkpoint, including model parameters and training state.
+
+        Parameters
+        ----------
+        epoch : int
+            The number of epochs completed when saving the checkpoint.
+        save_dir : str, optional
+            The directory to save the checkpoint. If not provided, the method will use the
+            instance's output_dir attribute.
+
+        Notes
+        -----
+        This method performs the following operations:
+        1. Create a dictionary of model parameters and training state information.
+        2. Save the model as a TorchScript (.pt) file for deployment purposes.
+        """
+
+        if save_dir is None:
+            save_dir = self.output_dir
+
+        # save as torchscript model
+        model_save_path = osp.join(save_dir, f"{self.architecture}.pt")
+        torch.jit.save(torch.jit.script(self.best_model), model_save_path)
+
+        return None
+    
+    def save_onnx_model(self, epoch: int, save_dir: Optional[str] = None, input_shape: Tuple[int, int, int, int] = (1, 3, 224, 224)):
+            
+            """
+            Save the current model checkpoint as an ONNX model, including model parameters and training state.
+    
+            Parameters
+            ----------
+            epoch : int
+                The number of epochs completed when saving the checkpoint.
+            save_dir : str, optional
+                The directory to save the checkpoint. If not provided, the method will use the
+                instance's output_dir attribute.
+    
+            Notes
+            -----
+            This method performs the following operations:
+            1. Create a dictionary of model parameters and training state information.
+            2. Save the model as a ONNX (.onnx) file for deployment purposes.
+            """
+    
+            if save_dir is None:
+                save_dir = self.output_dir
+
+            model_save_path = osp.join(save_dir, f"{self.architecture}.onnx")
+
+            # create a dummy input for tracing
+            image = torch.randn(input_shape).to(self.device)
+
+            # save as ONNX model
+            torch.onnx.export(
+            self.best_model,  # model being run
+            image,  # model input (or a tuple for multiple inputs)
+            model_save_path,  # where to save the model (can be a file or file-like object)
+            export_params=True,  # store the trained parameter weights inside the model file
+            opset_version=10,  # the ONNX version to export the model to
+            do_constant_folding=True,  # whether to execute constant folding for optimization
+            input_names=["input"],  # the model's input names
+            output_names=["output"],  # the model's output names
+            dynamic_axes={
+                "input": {0: "batch_size"},  # variable length axes
+                "output": {0: "batch_size"},
+            },
+)
+    
+            return None
 
     def train_epochs(
         self,

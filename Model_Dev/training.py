@@ -172,6 +172,9 @@ def main(arg_namespace=None):
             mlflow.log_metric("train_loss", trainer.train_losses[-1], step=epoch)
             mlflow.log_metric("val_loss", trainer.val_losses[-1], step=epoch)
 
+            # log best val loss
+            mlflow.log_metric("best_val_loss", trainer.best_val_loss)
+
             # Log the training and validation metrics to MLflow
             mlflow.log_metric("train_accuracy", train_accuracy, step=epoch)
             mlflow.log_metric("val_accuracy", val_accuracy, step=epoch)
@@ -188,8 +191,15 @@ def main(arg_namespace=None):
                 os.path.join(trainer.output_dir, "losses.png"), "losses.png"
             )
 
+            # Save the best model
+            if trainer.val_losses[-1] < trainer.best_val_loss:
+                # output dir mlflow current experiment
+                output_dir = mlflow.get_artifact_uri()
+                trainer.save_checkpoint(epoch=epoch, save_dir=output_dir)
+                trainer.save_onnx_model(epoch=epoch, save_dir=output_dir)
+
         # Log the final PyTorch model to MLflow
-        mlflow.pytorch.log_model(model, "model")
+        mlflow.pytorch.log_model(trainer.best_model, "best_model")
 
     return trainer.best_val_loss
 
